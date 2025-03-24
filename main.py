@@ -1,4 +1,3 @@
-# main.py
 from models import many_to_one, one_to_many, many_to_many
 
 def main():
@@ -13,13 +12,13 @@ def main():
             choice = int(input("Enter your choice (1-4): "))
             
             if choice == 4:
-                print("🚪 Exiting program...")
+                print("Exiting program...")
                 break  # Exit the loop
 
             num_threads = int(input("Enter the number of threads: "))
 
             if num_threads < 1:
-                print("⚠️ Please enter a valid number of threads (1 or more).")
+                print("Please enter a valid number of threads (1 or more).")
                 continue
 
             # Switch-case alternative using if-elif
@@ -30,10 +29,10 @@ def main():
             elif choice == 3:
                 many_to_many(num_threads)
             else:
-                print("❌ Invalid choice! Please enter a number between 1 and 4.")
+                print("Invalid choice! Please enter a number between 1 and 4.")
 
         except ValueError:
-            print("⚠️ Invalid input! Please enter a number.")
+            print("Invalid input! Please enter a number.")
 
 if __name__ == "__main__":
     main()
