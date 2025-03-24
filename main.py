@@ -23,7 +23,8 @@ def main():
 
             # Switch-case alternative using if-elif
             if choice == 1:
-                many_to_one(num_threads)
+                sem_val = int(input("Enter the value of semaphore: "))
+                many_to_one(num_threads, sem_val)
             elif choice == 2:
                 one_to_many(num_threads)
             elif choice == 3:
