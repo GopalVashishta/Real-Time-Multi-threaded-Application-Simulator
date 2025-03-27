@@ -1,0 +1,57 @@
+2025-03-27 17:42:54,175 - INFO - logger - Starting Thread Simulator application
+2025-03-27 17:42:54,227 - INFO - logger - ttkthemes package is available
+2025-03-27 17:42:54,738 - INFO - logger - Using matplotlib version 3.10.0
+2025-03-27 17:42:54,738 - INFO - logger - Set matplotlib backend to TkAgg
+2025-03-27 17:42:54,744 - DEBUG - logger - Importing matplotlib
+2025-03-27 17:42:55,176 - INFO - logger - Matplotlib imported successfully
+2025-03-27 17:42:55,176 - DEBUG - logger - Importing simulator modules
+2025-03-27 17:42:55,176 - INFO - logger - Simulator modules imported successfully
+2025-03-27 17:42:55,176 - INFO - logger - ttkthemes package is available and imported
+2025-03-27 17:42:55,176 - INFO - logger - Python version: 3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]
+2025-03-27 17:42:55,176 - INFO - logger - Tkinter version: 8.6
+2025-03-27 17:42:55,248 - INFO - logger - Display is available and Tkinter is working
+2025-03-27 17:42:55,248 - INFO - logger - Creating main window
+2025-03-27 17:42:56,163 - INFO - logger - Using ThemedTk with 'arc' theme
+2025-03-27 17:42:56,163 - INFO - logger - Initializing UI...
+2025-03-27 17:42:56,163 - INFO - logger - Initializing ThreadSimulatorUI
+2025-03-27 17:42:56,163 - DEBUG - logger - Creating ThreadSimulator instance
+2025-03-27 17:42:56,163 - INFO - logger - Initializing ThreadSimulator
+2025-03-27 17:42:56,163 - INFO - logger - ThreadSimulator initialized successfully
+2025-03-27 17:42:56,163 - DEBUG - logger - Setting window geometry
+2025-03-27 17:42:56,185 - DEBUG - logger - Creating main frame
+2025-03-27 17:42:56,185 - DEBUG - logger - Creating control panel
+2025-03-27 17:42:56,203 - DEBUG - logger - Creating visualization panel
+2025-03-27 17:42:56,203 - DEBUG - logger - Creating notebook for visualization tabs
+2025-03-27 17:42:56,203 - DEBUG - logger - Creating thread visualization tab
+2025-03-27 17:42:56,203 - DEBUG - logger - Setting up matplotlib figure for thread visualization
+2025-03-27 17:42:56,219 - DEBUG - logger - Creating FigureCanvasTkAgg instance
+2025-03-27 17:42:56,233 - DEBUG - logger - Drawing initial canvas
+2025-03-27 17:42:56,279 - INFO - logger - Thread visualization canvas created successfully
+2025-03-27 17:42:56,335 - DEBUG - logger - Creating status bar
+2025-03-27 17:42:56,335 - DEBUG - logger - Setting up initial UI state
+2025-03-27 17:42:56,335 - INFO - logger - Creating example simulation with model: ThreadModelType.MANY_TO_ONE
+2025-03-27 17:42:56,335 - INFO - logger - Resetting simulation
+2025-03-27 17:42:56,335 - DEBUG - logger - Created process: Example Process
+2025-03-27 17:42:56,335 - DEBUG - logger - Created semaphore: Resource Semaphore
+2025-03-27 17:42:56,335 - DEBUG - logger - Creating threads for example simulation
+2025-03-27 17:42:56,335 - DEBUG - logger - Created thread: Worker-1
+2025-03-27 17:42:56,335 - DEBUG - logger - Created thread: Worker-2
+2025-03-27 17:42:56,335 - DEBUG - logger - Created thread: Worker-3
+2025-03-27 17:42:56,335 - DEBUG - logger - Created thread: Worker-4
+2025-03-27 17:42:56,335 - DEBUG - logger - Created thread: Worker-5
+2025-03-27 17:42:56,335 - DEBUG - logger - Setting threading model to: ThreadModelType.MANY_TO_ONE
+2025-03-27 17:42:56,335 - INFO - logger - Set threading model to Many-to-One
+2025-03-27 17:42:56,335 - INFO - logger - Example simulation created successfully
+2025-03-27 17:42:56,335 - DEBUG - logger - Starting UI update loop
+2025-03-27 17:42:56,335 - INFO - logger - ThreadSimulatorUI initialization complete
+2025-03-27 17:42:56,335 - INFO - logger - UI initialized successfully
+2025-03-27 17:42:56,335 - DEBUG - logger - Bringing window to foreground
+2025-03-27 17:43:41,760 - ERROR - logger - Application failed to start Exception: can't invoke "wm" command: application has been destroyed
+2025-03-27 17:43:41,772 - ERROR - logger - Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\ExP\thread-simulator\thread-simulator\main.py", line 95, in <module>
+    root.deiconify()
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 2089, in wm_deiconify
+    return self.tk.call('wm', 'deiconify', self._w)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "wm" command: application has been destroyed
+

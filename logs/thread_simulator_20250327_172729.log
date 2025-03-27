@@ -1,0 +1,48 @@
+2025-03-27 17:27:29,522 - INFO - logger - Starting Thread Simulator application
+2025-03-27 17:27:29,559 - INFO - logger - ttkthemes package is available
+2025-03-27 17:27:30,041 - INFO - logger - Using matplotlib version 3.10.0
+2025-03-27 17:27:30,041 - INFO - logger - Set matplotlib backend to TkAgg
+2025-03-27 17:27:30,049 - DEBUG - logger - Importing matplotlib
+2025-03-27 17:27:30,538 - INFO - logger - Matplotlib imported successfully
+2025-03-27 17:27:30,538 - DEBUG - logger - Importing simulator modules
+2025-03-27 17:27:30,541 - INFO - logger - Simulator modules imported successfully
+2025-03-27 17:27:30,541 - INFO - logger - ttkthemes package is available and imported
+2025-03-27 17:27:30,541 - INFO - logger - Python version: 3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]
+2025-03-27 17:27:30,541 - INFO - logger - Tkinter version: 8.6
+2025-03-27 17:27:30,605 - INFO - logger - Display is available and Tkinter is working
+2025-03-27 17:27:30,620 - INFO - logger - Creating main window
+2025-03-27 17:27:33,863 - INFO - logger - Using ThemedTk with 'arc' theme
+2025-03-27 17:27:33,863 - INFO - logger - Initializing UI...
+2025-03-27 17:27:33,863 - INFO - logger - Initializing ThreadSimulatorUI
+2025-03-27 17:27:33,879 - DEBUG - logger - Creating ThreadSimulator instance
+2025-03-27 17:27:33,879 - INFO - logger - Initializing ThreadSimulator
+2025-03-27 17:27:33,879 - INFO - logger - ThreadSimulator initialized successfully
+2025-03-27 17:27:33,879 - DEBUG - logger - Setting window geometry
+2025-03-27 17:27:33,908 - DEBUG - logger - Creating main frame
+2025-03-27 17:27:33,910 - DEBUG - logger - Creating control panel
+2025-03-27 17:27:33,922 - DEBUG - logger - Creating visualization panel
+2025-03-27 17:27:33,922 - DEBUG - logger - Creating notebook for visualization tabs
+2025-03-27 17:27:33,922 - DEBUG - logger - Creating thread visualization tab
+2025-03-27 17:27:33,922 - DEBUG - logger - Setting up matplotlib figure for thread visualization
+2025-03-27 17:27:33,939 - DEBUG - logger - Creating FigureCanvasTkAgg instance
+2025-03-27 17:27:34,045 - DEBUG - logger - Drawing initial canvas
+2025-03-27 17:27:34,116 - INFO - logger - Thread visualization canvas created successfully
+2025-03-27 17:27:34,231 - DEBUG - logger - Creating status bar
+2025-03-27 17:27:34,244 - DEBUG - logger - Setting up initial UI state
+2025-03-27 17:27:34,244 - INFO - logger - Creating example simulation with model: ThreadModelType.MANY_TO_ONE
+2025-03-27 17:27:34,244 - INFO - logger - Resetting simulation
+2025-03-27 17:27:34,244 - DEBUG - logger - Created process: Example Process
+2025-03-27 17:27:34,244 - DEBUG - logger - Created semaphore: Resource Semaphore
+2025-03-27 17:27:34,244 - DEBUG - logger - Creating threads for example simulation
+2025-03-27 17:27:34,244 - DEBUG - logger - Created thread: Worker-1
+2025-03-27 17:27:34,244 - DEBUG - logger - Created thread: Worker-2
+2025-03-27 17:27:34,244 - DEBUG - logger - Created thread: Worker-3
+2025-03-27 17:27:34,244 - DEBUG - logger - Created thread: Worker-4
+2025-03-27 17:27:34,244 - DEBUG - logger - Created thread: Worker-5
+2025-03-27 17:27:34,244 - DEBUG - logger - Setting threading model to: ThreadModelType.MANY_TO_ONE
+2025-03-27 17:27:34,244 - INFO - logger - Set threading model to Many-to-One
+2025-03-27 17:27:34,244 - INFO - logger - Example simulation created successfully
+2025-03-27 17:27:34,244 - DEBUG - logger - Starting UI update loop
+2025-03-27 17:27:34,250 - INFO - logger - ThreadSimulatorUI initialization complete
+2025-03-27 17:27:34,250 - INFO - logger - UI initialized successfully
+2025-03-27 17:27:34,250 - DEBUG - logger - Bringing window to foreground

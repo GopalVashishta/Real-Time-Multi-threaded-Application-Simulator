@@ -1,0 +1,170 @@
+2025-03-27 17:02:07,467 - INFO - logger - Starting Thread Simulator application
+2025-03-27 17:02:07,467 - INFO - logger - ttkthemes package not available, using standard Tk
+2025-03-27 17:02:08,003 - INFO - logger - Using matplotlib version 3.10.0
+2025-03-27 17:02:08,003 - INFO - logger - Set matplotlib backend to TkAgg
+2025-03-27 17:02:08,014 - DEBUG - logger - Importing matplotlib
+2025-03-27 17:02:08,485 - INFO - logger - Matplotlib imported successfully
+2025-03-27 17:02:08,485 - DEBUG - logger - Importing simulator modules
+2025-03-27 17:02:08,485 - INFO - logger - Simulator modules imported successfully
+2025-03-27 17:02:08,496 - INFO - logger - ttkthemes package not available, using standard ttk styling
+2025-03-27 17:02:08,496 - INFO - logger - Python version: 3.12.8 (tags/v3.12.8:2dc476b, Dec  3 2024, 19:30:04) [MSC v.1942 64 bit (AMD64)]
+2025-03-27 17:02:08,496 - INFO - logger - Tkinter version: 8.6
+2025-03-27 17:02:08,568 - INFO - logger - Display is available and Tkinter is working
+2025-03-27 17:02:08,579 - INFO - logger - Creating main window
+2025-03-27 17:02:08,646 - INFO - logger - Using standard Tk
+2025-03-27 17:02:08,647 - INFO - logger - Initializing UI...
+2025-03-27 17:02:08,647 - INFO - logger - Initializing ThreadSimulatorUI
+2025-03-27 17:02:08,647 - DEBUG - logger - Creating ThreadSimulator instance
+2025-03-27 17:02:08,647 - INFO - logger - Initializing ThreadSimulator
+2025-03-27 17:02:08,647 - INFO - logger - ThreadSimulator initialized successfully
+2025-03-27 17:02:08,647 - DEBUG - logger - Setting window geometry
+2025-03-27 17:02:08,660 - DEBUG - logger - Creating main frame
+2025-03-27 17:02:08,662 - DEBUG - logger - Creating control panel
+2025-03-27 17:02:08,668 - DEBUG - logger - Creating visualization panel
+2025-03-27 17:02:08,668 - DEBUG - logger - Creating notebook for visualization tabs
+2025-03-27 17:02:08,668 - DEBUG - logger - Creating thread visualization tab
+2025-03-27 17:02:08,676 - DEBUG - logger - Setting up matplotlib figure for thread visualization
+2025-03-27 17:02:08,685 - DEBUG - logger - Creating FigureCanvasTkAgg instance
+2025-03-27 17:02:08,713 - DEBUG - logger - Drawing initial canvas
+2025-03-27 17:02:08,762 - INFO - logger - Thread visualization canvas created successfully
+2025-03-27 17:02:08,812 - DEBUG - logger - Creating status bar
+2025-03-27 17:02:08,812 - DEBUG - logger - Setting up initial UI state
+2025-03-27 17:02:08,812 - INFO - logger - Creating example simulation with model: ThreadModelType.MANY_TO_ONE
+2025-03-27 17:02:08,812 - INFO - logger - Resetting simulation
+2025-03-27 17:02:08,812 - DEBUG - logger - Created process: Example Process
+2025-03-27 17:02:08,820 - DEBUG - logger - Created semaphore: Resource Semaphore
+2025-03-27 17:02:08,820 - DEBUG - logger - Creating threads for example simulation
+2025-03-27 17:02:08,820 - DEBUG - logger - Created thread: Worker-1
+2025-03-27 17:02:08,820 - DEBUG - logger - Created thread: Worker-2
+2025-03-27 17:02:08,820 - DEBUG - logger - Created thread: Worker-3
+2025-03-27 17:02:08,820 - DEBUG - logger - Created thread: Worker-4
+2025-03-27 17:02:08,820 - DEBUG - logger - Created thread: Worker-5
+2025-03-27 17:02:08,820 - DEBUG - logger - Setting threading model to: ThreadModelType.MANY_TO_ONE
+2025-03-27 17:02:08,820 - INFO - logger - Set threading model to Many-to-One
+2025-03-27 17:02:08,820 - INFO - logger - Example simulation created successfully
+2025-03-27 17:02:08,820 - DEBUG - logger - Starting UI update loop
+2025-03-27 17:02:08,820 - INFO - logger - ThreadSimulatorUI initialization complete
+2025-03-27 17:02:08,820 - INFO - logger - UI initialized successfully
+2025-03-27 17:02:08,820 - DEBUG - logger - Bringing window to foreground
+2025-03-27 17:02:44,888 - INFO - logger - Resetting simulation
+2025-03-27 17:02:44,889 - INFO - logger - Set threading model to Many-to-Many
+2025-03-27 17:02:44,890 - INFO - logger - Starting simulation
+2025-03-27 17:02:48,132 - ERROR - logger - Error in safe_update_ui Exception: main thread is not in main loop
+2025-03-27 17:02:48,148 - ERROR - logger - Error in safe_update_ui Exception: main thread is not in main loop
+2025-03-27 17:02:48,148 - ERROR - logger - Error in safe_update_ui Exception: main thread is not in main loop
+2025-03-27 17:02:48,148 - ERROR - logger - Error in safe_update_ui Exception: main thread is not in main loop
+2025-03-27 17:02:48,148 - ERROR - logger - Error in safe_update_ui Exception: main thread is not in main loop
+2025-03-27 17:02:48,157 - ERROR - logger - Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\ExP\thread-simulator\thread-simulator\ui.py", line 756, in safe_update_ui
+    self.root.after_idle(self.update_ui)
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 882, in after_idle
+    return self.after('idle', func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 873, in after
+    name = self._register(callit)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1604, in _register
+    self.tk.createcommand(name, f)
+RuntimeError: main thread is not in main loop
+
+2025-03-27 17:02:48,161 - ERROR - logger - Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\ExP\thread-simulator\thread-simulator\ui.py", line 756, in safe_update_ui
+    self.root.after_idle(self.update_ui)
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 882, in after_idle
+    return self.after('idle', func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 873, in after
+    name = self._register(callit)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1604, in _register
+    self.tk.createcommand(name, f)
+RuntimeError: main thread is not in main loop
+
+2025-03-27 17:02:48,161 - ERROR - logger - Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\ExP\thread-simulator\thread-simulator\ui.py", line 756, in safe_update_ui
+    self.root.after_idle(self.update_ui)
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 882, in after_idle
+    return self.after('idle', func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 873, in after
+    name = self._register(callit)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1604, in _register
+    self.tk.createcommand(name, f)
+RuntimeError: main thread is not in main loop
+
+2025-03-27 17:02:48,163 - ERROR - logger - Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\ExP\thread-simulator\thread-simulator\ui.py", line 756, in safe_update_ui
+    self.root.after_idle(self.update_ui)
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 882, in after_idle
+    return self.after('idle', func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 873, in after
+    name = self._register(callit)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1604, in _register
+    self.tk.createcommand(name, f)
+RuntimeError: main thread is not in main loop
+
+2025-03-27 17:02:48,170 - ERROR - logger - Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\ExP\thread-simulator\thread-simulator\ui.py", line 756, in safe_update_ui
+    self.root.after_idle(self.update_ui)
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 882, in after_idle
+    return self.after('idle', func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 873, in after
+    name = self._register(callit)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1604, in _register
+    self.tk.createcommand(name, f)
+RuntimeError: main thread is not in main loop
+
+2025-03-27 17:02:51,349 - ERROR - logger - Error in safe_update_ui Exception: main thread is not in main loop
+2025-03-27 17:02:51,349 - ERROR - logger - Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\ExP\thread-simulator\thread-simulator\ui.py", line 756, in safe_update_ui
+    self.root.after_idle(self.update_ui)
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 882, in after_idle
+    return self.after('idle', func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 873, in after
+    name = self._register(callit)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1604, in _register
+    self.tk.createcommand(name, f)
+RuntimeError: main thread is not in main loop
+
+2025-03-27 17:02:51,361 - ERROR - logger - Error in safe_update_ui Exception: main thread is not in main loop
+2025-03-27 17:02:51,361 - ERROR - logger - Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\ExP\thread-simulator\thread-simulator\ui.py", line 756, in safe_update_ui
+    self.root.after_idle(self.update_ui)
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 882, in after_idle
+    return self.after('idle', func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 873, in after
+    name = self._register(callit)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1604, in _register
+    self.tk.createcommand(name, f)
+RuntimeError: main thread is not in main loop
+
+2025-03-27 17:02:51,361 - INFO - logger - Simulation complete
+2025-03-27 17:02:53,382 - DEBUG - logger - Set simulation speed to 0.883
+2025-03-27 17:02:53,588 - DEBUG - logger - Set simulation speed to 0.5205
+2025-03-27 17:02:53,827 - DEBUG - logger - Set simulation speed to 0.361
+2025-03-27 17:02:54,050 - DEBUG - logger - Set simulation speed to 0.187
+2025-03-27 17:02:54,241 - DEBUG - logger - Set simulation speed to 0.14350000000000002
+2025-03-27 17:02:54,447 - DEBUG - logger - Set simulation speed to 0.1145
+2025-03-27 17:02:54,654 - DEBUG - logger - Set simulation speed to 0.1
+2025-03-27 17:02:55,513 - DEBUG - logger - Set simulation speed to 0.216
+2025-03-27 17:02:55,718 - DEBUG - logger - Set simulation speed to 0.274
+2025-03-27 17:02:55,919 - DEBUG - logger - Set simulation speed to 0.34650000000000003
+2025-03-27 17:02:56,125 - DEBUG - logger - Set simulation speed to 0.39
+2025-03-27 17:03:16,038 - ERROR - logger - Application failed to start Exception: can't invoke "wm" command: application has been destroyed
+2025-03-27 17:03:16,038 - ERROR - logger - Traceback (most recent call last):
+  File "C:\Users\Asus\Downloads\ExP\thread-simulator\thread-simulator\main.py", line 95, in <module>
+    root.deiconify()
+  File "c:\Users\Asus\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 2089, in wm_deiconify
+    return self.tk.call('wm', 'deiconify', self._w)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: can't invoke "wm" command: application has been destroyed
+
