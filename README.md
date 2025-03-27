@@ -1,5 +1,4 @@
 # Real-Time-Multi-threaded-Application-Simulator
-Operating System Project Backend<br>
 #Problem Statement:
 Description: Develop a simulator to demonstrate multithreading models (e.g., Many-to
 One, One-to-Many, Many-to-Many) and thread synchronization using semaphores and 
