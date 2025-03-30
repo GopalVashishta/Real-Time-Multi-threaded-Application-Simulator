@@ -5,10 +5,10 @@ One, One-to-Many, Many-to-Many) and thread synchronization using semaphores and
 monitors. The simulator should visualize thread states and interactions, providing insights 
 into thread management and CPU scheduling in multi-threaded environments. 
 
-version: 4.0.1
+version: 4.0.2
 
 Functionalities of Modules
-1. models.py : It contains multi models to simulate threads multithreading(One-to-One, One-to-Many, Many-to-Many).
+1. models.py : It contains multi models to simulate threads multithreading(One-to-One, One-to-Many, Many-to-Many,Many-to-One).
 2. synchronization.py: This file has important classes such as semaphores to control resource locking(mutex in c++), and Monitor which will monitor locks and notify other threads as soon as the lock is released.
 3. logger.py: This module provides centralized logging functionality for the thread 
 simulator.
