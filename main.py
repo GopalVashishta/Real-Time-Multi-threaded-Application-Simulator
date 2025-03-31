@@ -17,10 +17,19 @@ from logger import log_info, log_error, log_exception, log_debug
 
 log_info("Starting Thread Simulator application")
 
+# Try to import ttkthemes for better styling
+try:
+    from ttkthemes import ThemedTk
+    THEMED_TK_AVAILABLE = True
+    log_info("ttkthemes package is available")
+except ImportError:
+    THEMED_TK_AVAILABLE = False
+    log_info("ttkthemes package not available, using standard Tk")
+
 # Ensure matplotlib uses the correct backend before any imports
 try:
     import matplotlib
-    log_info(f"Using matplotlib version {matplotlib._version_}")
+    log_info(f"Using matplotlib version {matplotlib.__version__}")
     matplotlib.use('TkAgg')
     log_info("Set matplotlib backend to TkAgg")
 except Exception as e:
@@ -46,15 +55,34 @@ def check_environment():
     except Exception as e:
         log_exception(e, "Display check failed")
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     try:
         # Log environment information
         check_environment()
         
         # Create the main application window
-        log_info("Creating main Tkinter window")
-        root = tk.Tk()
+        log_info("Creating main window")
+        
+        if THEMED_TK_AVAILABLE:
+            # Use ThemedTk for better styling
+            root = ThemedTk(theme="arc")
+            log_info("Using ThemedTk with 'arc' theme")
+        else:
+            # Fall back to standard Tk
+            root = tk.Tk()
+            log_info("Using standard Tk")
+            
         root.title("Thread Simulator")
+        
+        # Set application icon if available
+        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "icon.png")
+        if os.path.exists(icon_path):
+            try:
+                icon_img = tk.PhotoImage(file=icon_path)
+                root.iconphoto(True, icon_img)
+                log_info("Set application icon")
+            except Exception as e:
+                log_exception(e, "Failed to set application icon")
         
         # Initialize the UI
         log_info("Initializing UI...")
@@ -81,4 +109,4 @@ if _name_ == "_main_":
         except Exception as msgbox_error:
             log_exception(msgbox_error, "Failed to show error message box")
         
-        sys.exit(1)
+        sys.exit(1)
