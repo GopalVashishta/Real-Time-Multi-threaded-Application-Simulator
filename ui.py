@@ -12,6 +12,7 @@ import random
 import json
 from typing import Dict, List, Any, Tuple
 import sys
+import os
 
 # Import logger for detailed error tracking
 from logger import log_info, log_error, log_exception, log_debug
@@ -22,6 +23,8 @@ try:
     import matplotlib.pyplot as plt
     from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
     import matplotlib.animation as animation
+    from matplotlib.figure import Figure
+    plt.style.use('ggplot')  # Modern style for plots
     log_info("Matplotlib imported successfully")
 except Exception as e:
     log_exception(e, "Failed to import matplotlib modules")
@@ -38,23 +41,74 @@ except Exception as e:
     log_exception(e, "Failed to import simulator modules")
     raise
 
+# Try to import ttkthemes for better styling if available
+try:
+    from ttkthemes import ThemedTk, ThemedStyle
+    THEMED_TK_AVAILABLE = True
+    log_info("ttkthemes package is available and imported")
+except ImportError:
+    THEMED_TK_AVAILABLE = False
+    log_info("ttkthemes package not available, using standard ttk styling")
+
 class ThreadSimulatorUI:
     """Main UI class for the Thread Simulator"""
+    
+    # Modern color schemes
+    LIGHT_THEME = {
+        "bg": "#f5f5f5",
+        "fg": "#212121",
+        "accent": "#2196f3",
+        "success": "#4caf50",
+        "warning": "#ff9800",
+        "error": "#f44336",
+        "chart_colors": {
+            ThreadState.NEW: "#9e9e9e",  # Light gray
+            ThreadState.READY: "#ffeb3b", # Yellow
+            ThreadState.RUNNING: "#4caf50", # Green
+            ThreadState.BLOCKED: "#f44336", # Red
+            ThreadState.TERMINATED: "#212121" # Black
+        }
+    }
+    
+    DARK_THEME = {
+        "bg": "#212121",
+        "fg": "#f5f5f5",
+        "accent": "#2196f3",
+        "success": "#4caf50",
+        "warning": "#ff9800",
+        "error": "#f44336",
+        "chart_colors": {
+            ThreadState.NEW: "#757575",  # Gray
+            ThreadState.READY: "#fff176", # Light yellow
+            ThreadState.RUNNING: "#81c784", # Light green
+            ThreadState.BLOCKED: "#e57373", # Light red
+            ThreadState.TERMINATED: "#9e9e9e" # Light gray
+        }
+    }
     
     def __init__(self, root):
         self.root = root
         log_info("Initializing ThreadSimulatorUI")
         
         try:
+            # Apply modern theme
+            self._setup_theme()
+            
             # Create simulator instance
             log_debug("Creating ThreadSimulator instance")
             self.simulator = ThreadSimulator()
             self.simulator.register_update_callback(self.safe_update_ui)
             
+            # Current theme
+            self.current_theme = self.LIGHT_THEME
+            
             # Set UI sizes
             log_debug("Setting window geometry")
             self.root.geometry("1200x800")
             self.root.minsize(800, 600)
+            
+            # Create menu
+            self._create_menu()
             
             # Create the main frame
             log_debug("Creating main frame")
@@ -79,18 +133,103 @@ class ThreadSimulatorUI:
             log_debug("Starting UI update loop")
             self._start_ui_update_loop()
             
+            # Setup tooltips
+            self._setup_tooltips()
+            
             log_info("ThreadSimulatorUI initialization complete")
         except Exception as e:
             log_exception(e, "Failed to initialize ThreadSimulatorUI")
             raise
+    
+    def _setup_theme(self):
+        """Set up the UI theme"""
+        if THEMED_TK_AVAILABLE and isinstance(self.root, ThemedTk):
+            # Root is already a ThemedTk
+            self.style = ThemedStyle(self.root)
+            self.style.set_theme("arc")  # Modern, flat theme
+        else:
+            # Use standard ttk styling
+            self.style = ttk.Style()
+            if sys.platform == "darwin":  # macOS
+                self.style.theme_use("aqua")
+            elif sys.platform == "win32":  # Windows
+                self.style.theme_use("vista")
+            else:  # Linux and others
+                self.style.theme_use("clam")
+        
+        # Configure custom styles
+        self.style.configure("TButton", padding=6, relief="flat", background="#2196f3")
+        self.style.configure("Accent.TButton", background="#2196f3", foreground="white")
+        self.style.map("Accent.TButton",
+            background=[("active", "#1976d2"), ("pressed", "#0d47a1")],
+            foreground=[("active", "white"), ("pressed", "white")])
+        
+        self.style.configure("Success.TButton", background="#4caf50", foreground="white")
+        self.style.map("Success.TButton",
+            background=[("active", "#388e3c"), ("pressed", "#1b5e20")],
+            foreground=[("active", "white"), ("pressed", "white")])
+        
+        self.style.configure("Warning.TButton", background="#ff9800", foreground="white")
+        self.style.map("Warning.TButton",
+            background=[("active", "#f57c00"), ("pressed", "#e65100")],
+            foreground=[("active", "white"), ("pressed", "white")])
+        
+        self.style.configure("Error.TButton", background="#f44336", foreground="white")
+        self.style.map("Error.TButton",
+            background=[("active", "#d32f2f"), ("pressed", "#b71c1c")],
+            foreground=[("active", "white"), ("pressed", "white")])
+    
+    def _create_menu(self):
+        """Create main menu bar"""
+        self.menu_bar = tk.Menu(self.root)
+        self.root.config(menu=self.menu_bar)
+        
+        # File menu
+        file_menu = tk.Menu(self.menu_bar, tearoff=0)
+        file_menu.add_command(label="New Simulation", command=self._on_reset_simulation)
+        file_menu.add_separator()
+        file_menu.add_command(label="Export Simulation Data", command=self._export_data)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.root.quit)
+        self.menu_bar.add_cascade(label="File", menu=file_menu)
+        
+        # Edit menu
+        edit_menu = tk.Menu(self.menu_bar, tearoff=0)
+        
+        # Theme submenu
+        theme_menu = tk.Menu(edit_menu, tearoff=0)
+        self.theme_var = tk.StringVar(value="Light")
+        theme_menu.add_radiobutton(label="Light", variable=self.theme_var, value="Light", command=self._set_light_theme)
+        theme_menu.add_radiobutton(label="Dark", variable=self.theme_var, value="Dark", command=self._set_dark_theme)
+        edit_menu.add_cascade(label="Theme", menu=theme_menu)
+        
+        self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
+        
+        # View menu
+        view_menu = tk.Menu(self.menu_bar, tearoff=0)
+        view_menu.add_command(label="Reset Layout", command=self._reset_layout)
+        self.menu_bar.add_cascade(label="View", menu=view_menu)
+        
+        # Help menu
+        help_menu = tk.Menu(self.menu_bar, tearoff=0)
+        help_menu.add_command(label="About", command=self._show_about)
+        help_menu.add_command(label="Help", command=self._show_help)
+        self.menu_bar.add_cascade(label="Help", menu=help_menu)
     
     def _create_control_panel(self):
         """Create the control panel with configuration options"""
         control_frame = ttk.LabelFrame(self.main_frame, text="Control Panel")
         control_frame.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
         
-        # Model selection
-        model_frame = ttk.Frame(control_frame)
+        # Main settings frame
+        settings_frame = ttk.Frame(control_frame)
+        settings_frame.pack(fill=tk.X, padx=5, pady=5)
+        
+        # Model selection with header
+        model_header = ttk.Label(settings_frame, text="Simulation Settings", font=("Helvetica", 12, "bold"))
+        model_header.pack(anchor=tk.W, pady=(5, 10))
+        
+        model_frame = ttk.Frame(settings_frame)
         model_frame.pack(fill=tk.X, padx=5, pady=5)
         
         ttk.Label(model_frame, text="Threading Model:").pack(anchor=tk.W)
@@ -112,7 +251,7 @@ class ThreadSimulatorUI:
         model_dropdown.pack(fill=tk.X, pady=2)
         
         # Thread count
-        thread_frame = ttk.Frame(control_frame)
+        thread_frame = ttk.Frame(settings_frame)
         thread_frame.pack(fill=tk.X, padx=5, pady=5)
         
         ttk.Label(thread_frame, text="Number of Threads:").pack(anchor=tk.W)
@@ -127,7 +266,7 @@ class ThreadSimulatorUI:
         thread_count_spinbox.pack(fill=tk.X, pady=2)
         
         # Semaphore value
-        semaphore_frame = ttk.Frame(control_frame)
+        semaphore_frame = ttk.Frame(settings_frame)
         semaphore_frame.pack(fill=tk.X, padx=5, pady=5)
         
         ttk.Label(semaphore_frame, text="Semaphore Value:").pack(anchor=tk.W)
@@ -142,7 +281,7 @@ class ThreadSimulatorUI:
         semaphore_value_spinbox.pack(fill=tk.X, pady=2)
         
         # Kernel threads (for Many-to-Many model)
-        kernel_thread_frame = ttk.Frame(control_frame)
+        kernel_thread_frame = ttk.Frame(settings_frame)
         kernel_thread_frame.pack(fill=tk.X, padx=5, pady=5)
         
         ttk.Label(kernel_thread_frame, text="Kernel Threads (Many-to-Many):").pack(anchor=tk.W)
@@ -156,6 +295,10 @@ class ThreadSimulatorUI:
         )
         kernel_thread_count_spinbox.pack(fill=tk.X, pady=2)
         
+        # Simulation control header
+        control_header = ttk.Label(control_frame, text="Simulation Control", font=("Helvetica", 12, "bold"))
+        control_header.pack(anchor=tk.W, pady=(15, 10), padx=5)
+        
         # Action buttons
         button_frame = ttk.Frame(control_frame)
         button_frame.pack(fill=tk.X, padx=5, pady=10)
@@ -163,7 +306,8 @@ class ThreadSimulatorUI:
         self.start_button = ttk.Button(
             button_frame, 
             text="Start Simulation",
-            command=self._on_start_simulation
+            command=self._on_start_simulation,
+            style="Accent.TButton"
         )
         self.start_button.pack(fill=tk.X, pady=2)
         
@@ -171,14 +315,16 @@ class ThreadSimulatorUI:
             button_frame, 
             text="Stop Simulation",
             command=self._on_stop_simulation,
-            state=tk.DISABLED
+            state=tk.DISABLED,
+            style="Error.TButton"
         )
         self.stop_button.pack(fill=tk.X, pady=2)
         
         self.reset_button = ttk.Button(
             button_frame, 
             text="Reset Simulation",
-            command=self._on_reset_simulation
+            command=self._on_reset_simulation,
+            style="Warning.TButton"
         )
         self.reset_button.pack(fill=tk.X, pady=2)
         
@@ -186,7 +332,13 @@ class ThreadSimulatorUI:
         speed_frame = ttk.Frame(control_frame)
         speed_frame.pack(fill=tk.X, padx=5, pady=5)
         
-        ttk.Label(speed_frame, text="Simulation Speed:").pack(anchor=tk.W)
+        # Speed label with value
+        speed_header_frame = ttk.Frame(speed_frame)
+        speed_header_frame.pack(fill=tk.X)
+        
+        ttk.Label(speed_header_frame, text="Simulation Speed:").pack(side=tk.LEFT)
+        self.speed_label = ttk.Label(speed_header_frame, text="1.0x")
+        self.speed_label.pack(side=tk.RIGHT)
         
         self.speed_var = tk.DoubleVar(value=1.0)
         speed_scale = ttk.Scale(
@@ -197,9 +349,6 @@ class ThreadSimulatorUI:
             command=self._on_speed_change
         )
         speed_scale.pack(fill=tk.X, pady=2)
-        
-        speed_label = ttk.Label(speed_frame, textvariable=self.speed_var)
-        speed_label.pack(pady=2)
         
         # Help button
         help_button = ttk.Button(
@@ -230,17 +379,32 @@ class ThreadSimulatorUI:
             log_debug("Setting up matplotlib figure for thread visualization")
             try:
                 plt.rcParams['figure.dpi'] = 100
-                self.fig = plt.Figure(figsize=(8, 6), dpi=100, facecolor='white')
+                self.fig = Figure(figsize=(8, 6), dpi=100, facecolor=self.current_theme["bg"])
                 self.ax = self.fig.add_subplot(111)
-                self.ax.set_title('Thread States and Progress')
-                self.ax.set_xlabel('Progress (%)')
+                self.ax.set_title('Thread States and Progress', color=self.current_theme["fg"])
+                self.ax.set_xlabel('Progress (%)', color=self.current_theme["fg"])
                 self.ax.set_xlim(0, 100)
                 self.ax.set_ylim(-1, 1)  # Default range until threads are added
+                
+                # Customize plot styling
+                self.fig.patch.set_facecolor(self.current_theme["bg"])
+                self.ax.set_facecolor(self.current_theme["bg"])
+                self.ax.spines['bottom'].set_color(self.current_theme["fg"])
+                self.ax.spines['top'].set_color(self.current_theme["fg"])
+                self.ax.spines['right'].set_color(self.current_theme["fg"])
+                self.ax.spines['left'].set_color(self.current_theme["fg"])
+                self.ax.tick_params(axis='x', colors=self.current_theme["fg"])
+                self.ax.tick_params(axis='y', colors=self.current_theme["fg"])
                 
                 # This line might cause issues if matplotlib backend isn't properly set
                 log_debug("Creating FigureCanvasTkAgg instance")
                 self.canvas = FigureCanvasTkAgg(self.fig, master=self.thread_view_frame)
                 self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+                
+                # Create toolbar for thread visualization
+                from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
+                self.toolbar = NavigationToolbar2Tk(self.canvas, self.thread_view_frame)
+                self.toolbar.update()
                 
                 # Force a draw to detect any issues early
                 log_debug("Drawing initial canvas")
@@ -250,36 +414,50 @@ class ThreadSimulatorUI:
                 log_exception(e, "Failed to create matplotlib visualization")
                 raise
             
-            # Thread state legend
+            # Thread state legend with modern styling
             self.legend_frame = ttk.LabelFrame(self.thread_frame, text="Thread States")
             self.legend_frame.pack(fill=tk.X, padx=5, pady=5)
             
-            state_colors = {
-                ThreadState.NEW: "lightgray",
-                ThreadState.READY: "yellow",
-                ThreadState.RUNNING: "green",
-                ThreadState.BLOCKED: "red",
-                ThreadState.TERMINATED: "black"
-            }
+            legend_inner_frame = ttk.Frame(self.legend_frame)
+            legend_inner_frame.pack(fill=tk.X, padx=10, pady=10)
+            
+            state_colors = self.current_theme["chart_colors"]
             
             for i, (state, color) in enumerate(state_colors.items()):
-                frame = ttk.Frame(self.legend_frame)
-                frame.grid(row=i//3, column=i%3, padx=10, pady=5, sticky="w")
+                frame = ttk.Frame(legend_inner_frame)
+                frame.grid(row=i//3, column=i%3, padx=15, pady=8, sticky="w")
                 
-                color_box = tk.Canvas(frame, width=15, height=15, bg=color)
-                color_box.pack(side=tk.LEFT, padx=2)
+                color_box = tk.Canvas(frame, width=18, height=18, bg=color, highlightthickness=0)
+                color_box.pack(side=tk.LEFT, padx=5)
                 
-                ttk.Label(frame, text=state.value).pack(side=tk.LEFT)
+                ttk.Label(frame, text=state.value, font=("Helvetica", 10)).pack(side=tk.LEFT)
             
             # Timeline visualization tab
             self.timeline_frame = ttk.Frame(self.notebook)
             self.notebook.add(self.timeline_frame, text="Timeline")
             
             # Matplotlib figure for timeline visualization
-            self.timeline_fig = plt.Figure(figsize=(8, 6), dpi=100)
+            self.timeline_fig = Figure(figsize=(8, 6), dpi=100, facecolor=self.current_theme["bg"])
             self.timeline_ax = self.timeline_fig.add_subplot(111)
+            
+            # Customize plot styling
+            self.timeline_fig.patch.set_facecolor(self.current_theme["bg"])
+            self.timeline_ax.set_facecolor(self.current_theme["bg"])
+            self.timeline_ax.set_title('Thread Timeline', color=self.current_theme["fg"])
+            self.timeline_ax.set_xlabel('Time (s)', color=self.current_theme["fg"])
+            self.timeline_ax.spines['bottom'].set_color(self.current_theme["fg"])
+            self.timeline_ax.spines['top'].set_color(self.current_theme["fg"])
+            self.timeline_ax.spines['right'].set_color(self.current_theme["fg"])
+            self.timeline_ax.spines['left'].set_color(self.current_theme["fg"])
+            self.timeline_ax.tick_params(axis='x', colors=self.current_theme["fg"])
+            self.timeline_ax.tick_params(axis='y', colors=self.current_theme["fg"])
+            
             self.timeline_canvas = FigureCanvasTkAgg(self.timeline_fig, master=self.timeline_frame)
             self.timeline_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            
+            # Create toolbar for timeline visualization
+            self.timeline_toolbar = NavigationToolbar2Tk(self.timeline_canvas, self.timeline_frame)
+            self.timeline_toolbar.update()
             
             # Synchronization visualization tab
             self.sync_frame = ttk.Frame(self.notebook)
@@ -311,6 +489,111 @@ class ThreadSimulatorUI:
             # Configure grid weights to make the treeview expand properly
             self.sync_frame.rowconfigure(0, weight=1)
             self.sync_frame.columnconfigure(0, weight=1)
+            
+            # Analytics tab - NEW
+            self.analytics_frame = ttk.Frame(self.notebook)
+            self.notebook.add(self.analytics_frame, text="Analytics")
+            
+            # Set up the analytics tab with paned window for flexibility
+            self.analytics_pane = ttk.PanedWindow(self.analytics_frame, orient=tk.HORIZONTAL)
+            self.analytics_pane.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Left side: Thread performance metrics
+            self.performance_frame = ttk.LabelFrame(self.analytics_pane, text="Thread Performance")
+            self.analytics_pane.add(self.performance_frame, weight=1)
+            
+            # Treeview for thread performance stats
+            self.perf_tree = ttk.Treeview(self.performance_frame)
+            self.perf_tree["columns"] = ("cpu", "wait", "blocked", "switches")
+            self.perf_tree.heading("#0", text="Thread")
+            self.perf_tree.heading("cpu", text="CPU %")
+            self.perf_tree.heading("wait", text="Wait %")
+            self.perf_tree.heading("blocked", text="Blocked %")
+            self.perf_tree.heading("switches", text="Context Switches")
+            
+            self.perf_tree.column("#0", width=120)
+            self.perf_tree.column("cpu", width=70, anchor=tk.CENTER)
+            self.perf_tree.column("wait", width=70, anchor=tk.CENTER)
+            self.perf_tree.column("blocked", width=70, anchor=tk.CENTER)
+            self.perf_tree.column("switches", width=120, anchor=tk.CENTER)
+            
+            # Add scrollbars to the treeview
+            perf_scrollbar_y = ttk.Scrollbar(self.performance_frame, orient="vertical", command=self.perf_tree.yview)
+            perf_scrollbar_x = ttk.Scrollbar(self.performance_frame, orient="horizontal", command=self.perf_tree.xview)
+            self.perf_tree.configure(yscrollcommand=perf_scrollbar_y.set, xscrollcommand=perf_scrollbar_x.set)
+            
+            # Use grid for better control of scrollbar placement
+            self.perf_tree.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+            perf_scrollbar_y.grid(row=0, column=1, sticky="ns")
+            perf_scrollbar_x.grid(row=1, column=0, sticky="ew")
+            
+            # Configure grid weights
+            self.performance_frame.rowconfigure(0, weight=1)
+            self.performance_frame.columnconfigure(0, weight=1)
+            
+            # Right side: Performance charts
+            self.charts_frame = ttk.LabelFrame(self.analytics_pane, text="Performance Charts")
+            self.analytics_pane.add(self.charts_frame, weight=1)
+            
+            # Matplotlib figure for performance visualization
+            self.perf_fig = Figure(figsize=(6, 6), dpi=100, facecolor=self.current_theme["bg"])
+            self.perf_canvas = FigureCanvasTkAgg(self.perf_fig, master=self.charts_frame)
+            self.perf_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            
+            # Create two subplots for different metrics
+            gs = self.perf_fig.add_gridspec(2, 1)
+            self.cpu_ax = self.perf_fig.add_subplot(gs[0, 0])
+            self.event_ax = self.perf_fig.add_subplot(gs[1, 0])
+            
+            # Style the chart
+            self.perf_fig.patch.set_facecolor(self.current_theme["bg"])
+            for ax in [self.cpu_ax, self.event_ax]:
+                ax.set_facecolor(self.current_theme["bg"])
+                ax.spines['bottom'].set_color(self.current_theme["fg"])
+                ax.spines['top'].set_color(self.current_theme["fg"])
+                ax.spines['right'].set_color(self.current_theme["fg"])
+                ax.spines['left'].set_color(self.current_theme["fg"])
+                ax.tick_params(axis='x', colors=self.current_theme["fg"])
+                ax.tick_params(axis='y', colors=self.current_theme["fg"])
+            
+            # Set titles
+            self.cpu_ax.set_title('CPU Utilization per Thread', color=self.current_theme["fg"])
+            self.event_ax.set_title('Events Timeline', color=self.current_theme["fg"])
+            
+            # Bottom frame for overall stats
+            self.overall_stats_frame = ttk.Frame(self.analytics_frame)
+            self.overall_stats_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            # Overall statistics display
+            stat_frame = ttk.LabelFrame(self.overall_stats_frame, text="Overall Statistics")
+            stat_frame.pack(fill=tk.X, padx=5, pady=5)
+            
+            stat_grid = ttk.Frame(stat_frame)
+            stat_grid.pack(fill=tk.X, padx=10, pady=10)
+            
+            # Context switches
+            ttk.Label(stat_grid, text="Context Switches:").grid(row=0, column=0, sticky="w", padx=5, pady=3)
+            self.context_switch_var = tk.StringVar(value="0")
+            ttk.Label(stat_grid, textvariable=self.context_switch_var, font=("Helvetica", 10, "bold")).grid(row=0, column=1, sticky="w", padx=5, pady=3)
+            
+            # Resource contentions
+            ttk.Label(stat_grid, text="Resource Contentions:").grid(row=0, column=2, sticky="w", padx=5, pady=3)
+            self.contention_var = tk.StringVar(value="0")
+            ttk.Label(stat_grid, textvariable=self.contention_var, font=("Helvetica", 10, "bold")).grid(row=0, column=3, sticky="w", padx=5, pady=3)
+            
+            # Overall CPU utilization
+            ttk.Label(stat_grid, text="Overall CPU Utilization:").grid(row=1, column=0, sticky="w", padx=5, pady=3)
+            self.cpu_util_var = tk.StringVar(value="0.0%")
+            ttk.Label(stat_grid, textvariable=self.cpu_util_var, font=("Helvetica", 10, "bold")).grid(row=1, column=1, sticky="w", padx=5, pady=3)
+            
+            # Export button
+            export_button = ttk.Button(
+                self.overall_stats_frame, 
+                text="Export Simulation Data",
+                command=self._export_data
+            )
+            export_button.pack(fill=tk.X, padx=5, pady=5)
+            
         except Exception as e:
             log_exception(e, "Failed to create visualization panel")
             raise
@@ -325,7 +608,8 @@ class ThreadSimulatorUI:
             self.status_frame, 
             textvariable=self.status_var,
             relief=tk.SUNKEN,
-            anchor=tk.W
+            anchor=tk.W,
+            padding=(5, 2)
         )
         status_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
@@ -334,7 +618,8 @@ class ThreadSimulatorUI:
             self.status_frame,
             textvariable=self.time_var,
             relief=tk.SUNKEN,
-            width=15
+            width=15,
+            padding=(5, 2)
         )
         time_label.pack(side=tk.RIGHT)
     
@@ -350,8 +635,72 @@ class ThreadSimulatorUI:
             # Update UI
             self.update_ui()
         except Exception as e:
-            print(f"Error setting up initial UI state: {e}")
+            log_exception(e, "Error setting up initial UI state")
             self.status_var.set(f"Error in initialization: {str(e)}")
+    
+    def _set_light_theme(self):
+        """Switch to light theme"""
+        self.current_theme = self.LIGHT_THEME
+        self._apply_theme()
+    
+    def _set_dark_theme(self):
+        """Switch to dark theme"""
+        self.current_theme = self.DARK_THEME
+        self._apply_theme()
+    
+    def _apply_theme(self):
+        """Apply the current theme to all UI components"""
+        # Update plot backgrounds and text colors
+        self.fig.patch.set_facecolor(self.current_theme["bg"])
+        self.ax.set_facecolor(self.current_theme["bg"])
+        self.ax.set_title('Thread States and Progress', color=self.current_theme["fg"])
+        self.ax.set_xlabel('Progress (%)', color=self.current_theme["fg"])
+        self.ax.spines['bottom'].set_color(self.current_theme["fg"])
+        self.ax.spines['top'].set_color(self.current_theme["fg"])
+        self.ax.spines['right'].set_color(self.current_theme["fg"])
+        self.ax.spines['left'].set_color(self.current_theme["fg"])
+        self.ax.tick_params(axis='x', colors=self.current_theme["fg"])
+        self.ax.tick_params(axis='y', colors=self.current_theme["fg"])
+        
+        # Timeline plot
+        self.timeline_fig.patch.set_facecolor(self.current_theme["bg"])
+        self.timeline_ax.set_facecolor(self.current_theme["bg"])
+        self.timeline_ax.set_title('Thread Timeline', color=self.current_theme["fg"])
+        self.timeline_ax.set_xlabel('Time (s)', color=self.current_theme["fg"])
+        self.timeline_ax.spines['bottom'].set_color(self.current_theme["fg"])
+        self.timeline_ax.spines['top'].set_color(self.current_theme["fg"])
+        self.timeline_ax.spines['right'].set_color(self.current_theme["fg"])
+        self.timeline_ax.spines['left'].set_color(self.current_theme["fg"])
+        self.timeline_ax.tick_params(axis='x', colors=self.current_theme["fg"])
+        self.timeline_ax.tick_params(axis='y', colors=self.current_theme["fg"])
+        
+        # Apply theme to performance charts
+        self.perf_fig.patch.set_facecolor(self.current_theme["bg"])
+        for ax in [self.cpu_ax, self.event_ax]:
+            ax.set_facecolor(self.current_theme["bg"])
+            ax.set_title(ax.get_title(), color=self.current_theme["fg"])
+            ax.spines['bottom'].set_color(self.current_theme["fg"])
+            ax.spines['top'].set_color(self.current_theme["fg"])
+            ax.spines['right'].set_color(self.current_theme["fg"])
+            ax.spines['left'].set_color(self.current_theme["fg"])
+            ax.tick_params(axis='x', colors=self.current_theme["fg"])
+            ax.tick_params(axis='y', colors=self.current_theme["fg"])
+        
+        # Force redraw all canvases
+        self.canvas.draw()
+        self.timeline_canvas.draw()
+        self.perf_canvas.draw()
+        
+        # Update UI
+        self.update_ui()
+    
+    def _reset_layout(self):
+        """Reset UI layout to default"""
+        # Reset window size
+        self.root.geometry("1200x800")
+        
+        # Redraw UI elements
+        self.update_ui()
     
     def _start_ui_update_loop(self):
         """Start a loop to update the UI at regular intervals using Tkinter's after method"""
@@ -362,6 +711,43 @@ class ThreadSimulatorUI:
         
         # Start the first update
         self.root.after(100, schedule_next_update)
+    
+    def _setup_tooltips(self):
+        """Setup tooltips for UI elements"""
+        # We'll implement a simple tooltip class
+        class ToolTip:
+            def __init__(self, widget, text):
+                self.widget = widget
+                self.text = text
+                self.tip_window = None
+                self.widget.bind("<Enter>", self.show_tip)
+                self.widget.bind("<Leave>", self.hide_tip)
+            
+            def show_tip(self, event=None):
+                "Display text in a tooltip window"
+                x, y, _, _ = self.widget.bbox("insert")
+                x += self.widget.winfo_rootx() + 25
+                y += self.widget.winfo_rooty() + 25
+                
+                # Creates a toplevel window
+                self.tip_window = tw = tk.Toplevel(self.widget)
+                # Make it stay on top
+                tw.wm_overrideredirect(True)
+                tw.wm_geometry(f"+{x}+{y}")
+                
+                label = ttk.Label(tw, text=self.text, justify=tk.LEFT,
+                              background="#ffffe0", relief=tk.SOLID, borderwidth=1)
+                label.pack(ipadx=5, ipady=5)
+            
+            def hide_tip(self, event=None):
+                if self.tip_window:
+                    self.tip_window.destroy()
+                    self.tip_window = None
+        
+        # Add tooltips to UI elements
+        ToolTip(self.start_button, "Start or pause the simulation")
+        ToolTip(self.stop_button, "Stop the current simulation")
+        ToolTip(self.reset_button, "Reset to initial state")
     
     def safe_update_ui(self):
         """Thread-safe wrapper for update_ui"""
@@ -394,6 +780,7 @@ class ThreadSimulatorUI:
             self.root.after_idle(self._update_thread_visualization)
             self.root.after_idle(self._update_timeline_visualization)
             self.root.after_idle(self._update_sync_visualization)
+            self.root.after_idle(self._update_performance_visualization)
             self.root.after_idle(self._update_button_states)
         except Exception as e:
             log_exception(e, "Error updating UI")
@@ -410,14 +797,8 @@ class ThreadSimulatorUI:
         if not threads:
             return
         
-        # Colors for different thread states
-        state_colors = {
-            ThreadState.NEW: "lightgray",
-            ThreadState.READY: "yellow",
-            ThreadState.RUNNING: "green",
-            ThreadState.BLOCKED: "red",
-            ThreadState.TERMINATED: "gray"
-        }
+        # Colors for different thread states from current theme
+        state_colors = self.current_theme["chart_colors"]
         
         # Create the thread state visualization
         thread_names = [t.name for t in threads]
@@ -429,20 +810,33 @@ class ThreadSimulatorUI:
         bars = self.ax.barh(y_pos, thread_progress, height=0.5, 
                          color=[state_colors[state] for state in thread_states])
         
-        # Set labels and titles
+        # Set labels and titles with theme colors
         self.ax.set_yticks(y_pos)
-        self.ax.set_yticklabels(thread_names)
-        self.ax.set_xlabel('Progress (%)')
+        self.ax.set_yticklabels(thread_names, color=self.current_theme["fg"])
+        self.ax.set_xlabel('Progress (%)', color=self.current_theme["fg"])
         self.ax.set_xlim(0, 100)
-        self.ax.set_title('Thread States and Progress')
+        self.ax.set_title('Thread States and Progress', color=self.current_theme["fg"])
+        
+        # Style grid
+        self.ax.grid(True, linestyle='--', alpha=0.7)
+        
+        # Style axes
+        self.ax.set_facecolor(self.current_theme["bg"])
+        self.ax.spines['bottom'].set_color(self.current_theme["fg"])
+        self.ax.spines['top'].set_color(self.current_theme["fg"])
+        self.ax.spines['right'].set_color(self.current_theme["fg"])
+        self.ax.spines['left'].set_color(self.current_theme["fg"])
+        self.ax.tick_params(axis='x', colors=self.current_theme["fg"])
+        self.ax.tick_params(axis='y', colors=self.current_theme["fg"])
         
         # Add state labels to the bars
         for i, (bar, state) in enumerate(zip(bars, thread_states)):
+            label_color = 'white' if state == ThreadState.TERMINATED else 'black'
             self.ax.text(
                 5, i, 
                 state.value, 
                 va='center', 
-                color='black' if state != ThreadState.TERMINATED else 'white',
+                color=label_color,
                 fontweight='bold'
             )
         
@@ -459,14 +853,15 @@ class ThreadSimulatorUI:
         if not threads:
             return
         
-        # Colors for different thread states
-        state_colors = {
-            ThreadState.NEW: "lightgray",
-            ThreadState.READY: "yellow",
-            ThreadState.RUNNING: "green",
-            ThreadState.BLOCKED: "red",
-            ThreadState.TERMINATED: "black"
-        }
+        # Colors for different thread states from current theme
+        state_colors = self.current_theme["chart_colors"]
+        
+        # Set background and text colors
+        self.timeline_ax.set_facecolor(self.current_theme["bg"])
+        self.timeline_ax.spines['bottom'].set_color(self.current_theme["fg"])
+        self.timeline_ax.spines['top'].set_color(self.current_theme["fg"])
+        self.timeline_ax.spines['right'].set_color(self.current_theme["fg"])
+        self.timeline_ax.spines['left'].set_color(self.current_theme["fg"])
         
         # Plot timeline for each thread
         thread_names = [t.name for t in threads]
@@ -489,7 +884,8 @@ class ThreadSimulatorUI:
                     [start_time, end_time],
                     [y_positions[thread.name], y_positions[thread.name]],
                     color=state_colors[state],
-                    linewidth=8
+                    linewidth=10,
+                    solid_capstyle='butt'
                 )
             
             # Plot current state until now
@@ -501,17 +897,34 @@ class ThreadSimulatorUI:
                     [last_time, now],
                     [y_positions[thread.name], y_positions[thread.name]],
                     color=state_colors[history[-1]['state']],
-                    linewidth=8
+                    linewidth=10,
+                    solid_capstyle='butt'
                 )
+                
+                # Add the current state as text label at the end of the line
+                if history[-1]['state'] != ThreadState.TERMINATED:
+                    self.timeline_ax.text(
+                        now + 0.1, 
+                        y_positions[thread.name], 
+                        history[-1]['state'].value,
+                        color=self.current_theme["fg"],
+                        va='center',
+                        fontsize=8
+                    )
         
-        # Set labels and titles
+        # Set labels and titles with theme colors
         self.timeline_ax.set_yticks(range(len(threads)))
-        self.timeline_ax.set_yticklabels(thread_names)
-        self.timeline_ax.set_xlabel('Time (s)')
-        self.timeline_ax.set_title('Thread Timeline')
+        self.timeline_ax.set_yticklabels(thread_names, color=self.current_theme["fg"])
+        self.timeline_ax.set_xlabel('Time (s)', color=self.current_theme["fg"])
+        self.timeline_ax.set_title('Thread Timeline', color=self.current_theme["fg"])
+        self.timeline_ax.tick_params(axis='x', colors=self.current_theme["fg"])
+        self.timeline_ax.tick_params(axis='y', colors=self.current_theme["fg"])
+        
+        # Add a grid
+        self.timeline_ax.grid(True, linestyle='--', alpha=0.3)
         
         # Adjust axes limits
-        self.timeline_ax.set_xlim(0, max(0.1, self.simulator.current_time))
+        self.timeline_ax.set_xlim(0, max(0.1, self.simulator.current_time + 1))
         
         # Draw the canvas
         self.timeline_canvas.draw()
@@ -560,6 +973,121 @@ class ThreadSimulatorUI:
                     log_error(f"Error adding monitor to tree: {e}")
         except Exception as e:
             log_exception(e, f"Error updating sync visualization: {e}")
+    
+    def _update_performance_visualization(self):
+        """Update the performance visualization"""
+        try:
+            # Get performance stats
+            perf_stats = self.simulator.get_performance_stats()
+            
+            # Update performance treeview
+            self.perf_tree.delete(*self.perf_tree.get_children())
+            
+            # Add thread performance data
+            for thread_id, stats in perf_stats['thread_stats'].items():
+                self.perf_tree.insert(
+                    "", 
+                    "end",
+                    text=stats['name'],
+                    values=(
+                        f"{stats['cpu_utilization']:.1f}%",
+                        f"{stats['wait_time']:.1f}s",
+                        f"{stats['blocked_time']:.1f}s",
+                        stats['context_switches']
+                    )
+                )
+            
+            # Update overall stats
+            self.context_switch_var.set(str(perf_stats['context_switches']))
+            self.contention_var.set(str(perf_stats['resource_contentions']))
+            self.cpu_util_var.set(f"{perf_stats['overall_cpu_utilization']:.1f}%")
+            
+            # Clear previous plots
+            self.cpu_ax.clear()
+            self.event_ax.clear()
+            
+            # Set titles with theme colors
+            self.cpu_ax.set_title('CPU Utilization per Thread', color=self.current_theme["fg"])
+            self.event_ax.set_title('Events Timeline', color=self.current_theme["fg"])
+            
+            # Plot CPU utilization
+            thread_names = []
+            cpu_utils = []
+            
+            for thread_id, stats in perf_stats['thread_stats'].items():
+                thread_names.append(stats['name'])
+                cpu_utils.append(stats['cpu_utilization'])
+            
+            if thread_names:
+                bars = self.cpu_ax.barh(thread_names, cpu_utils, color=self.current_theme["accent"])
+                self.cpu_ax.set_xlabel('CPU Utilization (%)', color=self.current_theme["fg"])
+                self.cpu_ax.set_xlim(0, 100)
+                
+                # Add value labels to bars
+                for bar in bars:
+                    width = bar.get_width()
+                    self.cpu_ax.text(
+                        width + 1, 
+                        bar.get_y() + bar.get_height()/2, 
+                        f"{width:.1f}%",
+                        va='center', 
+                        color=self.current_theme["fg"],
+                        fontsize=8
+                    )
+            
+            # Plot recent events on timeline
+            events = perf_stats['recent_events']
+            if events:
+                # Normalize times
+                min_time = min(event['time'] for event in events)
+                event_times = [(event['time'] - min_time) for event in events]
+                event_types = [event['type'] for event in events]
+                
+                # Use different colors for different event types
+                colors = []
+                for event_type in event_types:
+                    if event_type == 'context_switch':
+                        colors.append(self.current_theme["warning"])
+                    elif event_type == 'resource_contention':
+                        colors.append(self.current_theme["error"])
+                    else:
+                        colors.append(self.current_theme["accent"])
+                
+                # Plot events as vertical lines
+                for i, (time, color) in enumerate(zip(event_times, colors)):
+                    self.event_ax.axvline(
+                        x=time, 
+                        color=color, 
+                        alpha=0.7,
+                        linewidth=2
+                    )
+                
+                self.event_ax.set_xlabel('Time (relative)', color=self.current_theme["fg"])
+                
+                # Add legend
+                from matplotlib.lines import Line2D
+                legend_elements = [
+                    Line2D([0], [0], color=self.current_theme["warning"], lw=2, label='Context Switch'),
+                    Line2D([0], [0], color=self.current_theme["error"], lw=2, label='Resource Contention')
+                ]
+                self.event_ax.legend(handles=legend_elements, loc='upper right')
+            
+            # Apply theme to axes
+            for ax in [self.cpu_ax, self.event_ax]:
+                ax.set_facecolor(self.current_theme["bg"])
+                ax.spines['bottom'].set_color(self.current_theme["fg"])
+                ax.spines['top'].set_color(self.current_theme["fg"])
+                ax.spines['right'].set_color(self.current_theme["fg"])
+                ax.spines['left'].set_color(self.current_theme["fg"])
+                ax.tick_params(axis='x', colors=self.current_theme["fg"])
+                ax.tick_params(axis='y', colors=self.current_theme["fg"])
+                ax.grid(True, linestyle='--', alpha=0.3)
+            
+            # Redraw
+            self.perf_canvas.draw()
+            
+        except Exception as e:
+            log_exception(e, "Error updating performance visualization")
     
     def _update_button_states(self):
         """Update the state of control buttons based on the simulator state"""
@@ -661,6 +1189,7 @@ class ThreadSimulatorUI:
         self.kernel_thread_count_var.set(3)
         self.model_var.set("Many-to-One")
         self.speed_var.set(1.0)
+        self.speed_label.config(text="1.0x")
         
         # Create an example simulation
         self.simulator.create_example_simulation()
@@ -670,6 +1199,32 @@ class ThreadSimulatorUI:
         """Handle change in the simulation speed slider"""
         speed = self.speed_var.get()
         self.simulator.set_simulation_speed(speed)
+        self.speed_label.config(text=f"{speed:.1f}x")
+    
+    def _export_data(self):
+        """Export simulation data to a file"""
+        # Only allow export if we have threads
+        if not self.simulator.threads:
+            messagebox.showinfo("No Data", "No simulation data to export.")
+            return
+            
+        # Ask for file location
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json")],
+            title="Export Simulation Data"
+        )
+        
+        if not file_path:
+            return  # User cancelled
+            
+        # Export data
+        success, result = self.simulator.export_simulation_data(file_path)
+        
+        if success:
+            messagebox.showinfo("Export Successful", f"Simulation data exported to {result}")
+        else:
+            messagebox.showerror("Export Failed", f"Error exporting data: {result}")
     
     def _show_help(self):
         """Show help information"""
@@ -697,3 +1252,18 @@ Visualizations:
         """
         
         messagebox.showinfo("Thread Simulator Help", help_text)
+    
+    def _show_about(self):
+        """Show about information"""
+        about_text = """
+Thread Simulator
+
+Version 1.0.0
+
+A visual simulation tool for understanding threading models
+and synchronization primitives.
+
+© 2023 Thread Simulator Team
+        """
+        
+        messagebox.showinfo("About Thread Simulator", about_text)
