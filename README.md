@@ -5,7 +5,7 @@ One, One-to-Many, Many-to-Many) and thread synchronization using semaphores and
 monitors. The simulator should visualize thread states and interactions, providing insights 
 into thread management and CPU scheduling in multi-threaded environments. 
 
-version: 4.0.2
+version: 4.0.3
 
 Functionalities of Modules
 1. models.py : It contains multi models to simulate threads multithreading(One-to-One, One-to-Many, Many-to-Many,Many-to-One).
