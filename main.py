@@ -62,7 +62,7 @@ if __name__ == "__main__":
         
         # Create the main application window
         log_info("Creating main window")
-        
+        #root = []
         if THEMED_TK_AVAILABLE:
             # Use ThemedTk for better styling
             root = ThemedTk(theme="arc")
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             root = tk.Tk()
             log_info("Using standard Tk")
             
-        root.title("Thread Simulator")
+        root.title("Real Time Multi-Threading Simulator")
         
         # Set application icon if available
         icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "icon.png")
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         # Make sure window appears in foreground
         log_debug("Bringing window to foreground")
         root.update()
-        root.deiconify()
+        #root.deiconify()
         root.lift()
         root.focus_force()
         
