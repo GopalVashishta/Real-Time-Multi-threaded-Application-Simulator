@@ -101,7 +101,7 @@ class ThreadSimulatorUI:
             
             # Current theme
             self.current_theme = self.LIGHT_THEME
-            
+            self.update_needed = threading.Event()
             # Set UI sizes
             log_debug("Setting window geometry")
             self.root.geometry("1200x800")
@@ -132,7 +132,8 @@ class ThreadSimulatorUI:
             # Start UI update loop
             log_debug("Starting UI update loop")
             self._start_ui_update_loop()
-            
+
+            self.root.protocol("WM_DELETE_WINDOW", self._on_close)
             # Setup tooltips
             self._setup_tooltips()
             
@@ -141,6 +142,15 @@ class ThreadSimulatorUI:
             log_exception(e, "Failed to initialize ThreadSimulatorUI")
             raise
     
+    def _on_close(self):
+        """Handle window close by stopping the simulator and destroying the window"""
+        try:
+            log_info("Closing ThreadSimulatorUI")
+            self.simulator.stop_simulation()  # Stop the simulator and its threads
+            self.root.destroy()              # Destroy the window
+        except Exception as e:
+            log_exception(e, "Error during window close")
+        
     def _setup_theme(self):
         """Set up the UI theme"""
         if THEMED_TK_AVAILABLE and isinstance(self.root, ThemedTk):
@@ -159,25 +169,25 @@ class ThreadSimulatorUI:
         
         # Configure custom styles
         self.style.configure("TButton", padding=6, relief="flat", background="#2196f3")
-        self.style.configure("Accent.TButton", background="#2196f3", foreground="white")
+        self.style.configure("Accent.TButton", background="#2196f3", foreground="black")
         self.style.map("Accent.TButton",
             background=[("active", "#1976d2"), ("pressed", "#0d47a1")],
-            foreground=[("active", "white"), ("pressed", "white")])
+            foreground=[("active", "grey"), ("pressed", "white")])
         
-        self.style.configure("Success.TButton", background="#4caf50", foreground="white")
+        self.style.configure("Success.TButton", background="#4caf50", foreground="black")
         self.style.map("Success.TButton",
             background=[("active", "#388e3c"), ("pressed", "#1b5e20")],
-            foreground=[("active", "white"), ("pressed", "white")])
+            foreground=[("active", "grey"), ("pressed", "white")])
         
-        self.style.configure("Warning.TButton", background="#ff9800", foreground="white")
+        self.style.configure("Warning.TButton", background="#ff9800", foreground="black")
         self.style.map("Warning.TButton",
             background=[("active", "#f57c00"), ("pressed", "#e65100")],
-            foreground=[("active", "white"), ("pressed", "white")])
+            foreground=[("active", "grey"), ("pressed", "white")])
         
-        self.style.configure("Error.TButton", background="#f44336", foreground="white")
+        self.style.configure("Error.TButton", background="#f44336", foreground="black")
         self.style.map("Error.TButton",
             background=[("active", "#d32f2f"), ("pressed", "#b71c1c")],
-            foreground=[("active", "white"), ("pressed", "white")])
+            foreground=[("active", "grey"), ("pressed", "white")])
     
     def _create_menu(self):
         """Create main menu bar"""
@@ -202,7 +212,7 @@ class ThreadSimulatorUI:
         theme_menu.add_radiobutton(label="Light", variable=self.theme_var, value="Light", command=self._set_light_theme)
         theme_menu.add_radiobutton(label="Dark", variable=self.theme_var, value="Dark", command=self._set_dark_theme)
         edit_menu.add_cascade(label="Theme", menu=theme_menu)
-        
+        self.root.config(menu=self.menu_bar)
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
         
         # View menu
@@ -701,7 +711,14 @@ class ThreadSimulatorUI:
         
         # Redraw UI elements
         self.update_ui()
-    
+    def _start_ui_update_loop(self):
+        def check_update():
+            #if self.update_needed.is_set():
+            self.update_ui()  # Perform update in main thread
+            self.update_needed.clear()  # Reset flag
+            self.root.after(100, check_update)  # Repeat every 100ms
+        self.root.after(100, check_update)  # Start the loop
+    '''
     def _start_ui_update_loop(self):
         """Start a loop to update the UI at regular intervals using Tkinter's after method"""
         def schedule_next_update():
@@ -711,7 +728,7 @@ class ThreadSimulatorUI:
         
         # Start the first update
         self.root.after(100, schedule_next_update)
-    
+    '''
     def _setup_tooltips(self):
         """Setup tooltips for UI elements"""
         # We'll implement a simple tooltip class
@@ -753,7 +770,8 @@ class ThreadSimulatorUI:
         """Thread-safe wrapper for update_ui"""
         try:
             # Use after_idle to ensure we're calling update_ui from the main thread
-            self.root.after_idle(self.update_ui)
+            self.update_needed.set()
+           # self.root.after_idle(self.update_ui)
         except Exception as e:
             log_exception(e, "Error in safe_update_ui")
     
@@ -1125,18 +1143,16 @@ class ThreadSimulatorUI:
             
             # Define thread function with semaphore usage
             def thread_function(thread_id, sem):
-                # Try to acquire the semaphore
                 while not sem.wait(self.simulator.threads[thread_id]):
+                    if not self.simulator.is_running:
+                        return  # Exit if simulation stops
                     time.sleep(0.1 / self.simulator.simulation_speed)
-                
-                # Critical section (simulate work)
+                 # Critical section
                 for i in range(10):
                     if not self.simulator.is_running:
-                        break
+                        return  # Exit if simulation stops
                     time.sleep(0.2 / self.simulator.simulation_speed)
                     self.simulator.threads[thread_id].progress = (i + 1) * 10
-                
-                # Release the semaphore
                 sem.signal(self.simulator.threads[thread_id])
             
             # Create threads
